@@ -26,9 +26,7 @@ def find_three_that_sums(sum: int, input_set: Set[int]) -> Optional[Tuple[int, i
 
 if __name__ == '__main__':
     with open('report_repair_input.txt', 'r') as f:
-        input_set = set()
-        for line in f:
-            input_set.add(int(line.replace('\n', '')))
+        input_set = {int(line.replace('\n', '')) for line in f}
 
     # Part one: Using hashing implementation. I'll put all numbers in a set. Then for each number I'll calculate the number it
     # needs for adding up to 2020 and check if the number is in that set. If found, then calculate the multiplication.
