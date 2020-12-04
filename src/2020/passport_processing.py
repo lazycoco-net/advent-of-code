@@ -2,26 +2,78 @@ import functools
 import re
 import time
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Set, Optional
+
+
+class Validator:
+    def validate(self, value: str) -> bool:
+        raise NotImplementedError('Needs to be implemented in child classes')
+
+
+@dataclass
+class RangeValidator(Validator):
+    min_value: int
+    max_value: int
+
+    def validate(self, value: str) -> bool:
+        return self.min_value <= int(value) <= self.max_value
+
+
+class HeightValidator(Validator):
+    validators: Dict[str, RangeValidator] = {
+        'cm': RangeValidator(150, 193),
+        'in': RangeValidator(59, 76)
+    }
+
+    def validate(self, value: str) -> bool:
+        match = re.search(r'^(\d+)(cm|in)$', value)
+        if match:
+            height = match.group(1)
+            unit = match.group(2)
+            return self.validators[unit].validate(height) if unit in self.validators else False
+        return False
+
+
+class HairColorValidator(Validator):
+    def validate(self, value: str) -> bool:
+        return re.match(r'^#[0-9a-f]{6}$', value) is not None
+
+
+class EyeColorValidator(Validator):
+    valid_colors: Set[str] = {'amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'}
+
+    def validate(self, value: str) -> bool:
+        return value in self.valid_colors
+
+
+class PassportIdValidator(Validator):
+
+    def validate(self, value: str) -> bool:
+        return re.match(r'^\d{9}$', value) is not None
 
 
 @dataclass
 class PassportField:
     name: str
     required: bool = True
+    validator: Optional[Validator] = None
 
     def validate(self, dictionary: Dict[str, str]) -> bool:
-        return self.name in dictionary if self.required else True
+        if self.required:
+            if self.name in dictionary:
+                return self.validator.validate(dictionary[self.name]) if self.validator else True
+            return False
+        return True
 
 
 FIELDS = [
-    PassportField('byr'),
-    PassportField('iyr'),
-    PassportField('eyr'),
-    PassportField('hgt'),
-    PassportField('hcl'),
-    PassportField('ecl'),
-    PassportField('pid'),
+    PassportField('byr', validator=RangeValidator(1920, 2002)),
+    PassportField('iyr', validator=RangeValidator(2010, 2020)),
+    PassportField('eyr', validator=RangeValidator(2020, 2030)),
+    PassportField('hgt', validator=HeightValidator()),
+    PassportField('hcl', validator=HairColorValidator()),
+    PassportField('ecl', validator=EyeColorValidator()),
+    PassportField('pid', validator=PassportIdValidator()),
     PassportField('cid', required=False)
 ]
 
@@ -40,6 +92,7 @@ if __name__ == '__main__':
         start_time = time.time()
         all_file = f.read()
         passports = all_file.split('\n\n')
+        print(f'Got {len(passports)} passports')
         count = 0
         for passport_str in passports:
             passport_info = to_dictionary(passport_str)
