@@ -36,11 +36,7 @@ class TobogganMap:
         return self.y >= self.height
 
     def is_tree(self) -> bool:
-        try:
-            return self.rows[self.y][self.x] == '#'
-        except IndexError as e:
-            print(f'Error at ({self.y}, {self.x})')
-            raise e
+        return self.rows[self.y][self.x] == '#'
 
     @staticmethod
     def from_file(file_name: str) -> 'TobogganMap':

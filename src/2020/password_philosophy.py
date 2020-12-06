@@ -21,7 +21,7 @@ if __name__ == '__main__':
         count_part_1 = 0
         count_part_2 = 0
         for line in f:
-            match = re.search(pattern, line)
+            match = re.match(pattern, line)
             if match:
                 minimum = int(match.group(1))
                 maximum = int(match.group(2))
