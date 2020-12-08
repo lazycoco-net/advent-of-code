@@ -7,11 +7,11 @@ from dataclasses import dataclass
 class Group:
     answers: str
 
-    def count_unique(self):
+    def count_unique(self) -> int:
         answers = self.answers.replace('\n', '')
         return len(set(answers))
 
-    def count_intersection(self):
+    def count_intersection(self) -> int:
         answer_sets = [set(answer) for answer in self.answers.split('\n')]
         reduced_set = functools.reduce(lambda a, b: a.intersection(b), answer_sets)
         return len(reduced_set)

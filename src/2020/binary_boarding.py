@@ -4,7 +4,7 @@ import time
 from typing import Dict
 
 
-def binary_to_decimal(number_str: str, zero_char: str, one_char) -> int:
+def binary_to_decimal(number_str: str, zero_char: str, one_char: str) -> int:
     return int(number_str.replace(zero_char, '0').replace(one_char, '1'), 2)
 
 

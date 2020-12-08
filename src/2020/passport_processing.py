@@ -26,7 +26,7 @@ class HeightValidator(Validator):
     }
 
     def validate(self, value: str) -> bool:
-        match = re.search(r'^(\d+)(cm|in)$', value)
+        match = re.match(r'^(\d+)(cm|in)$', value)
         if match:
             height = match.group(1)
             unit = match.group(2)
@@ -82,7 +82,7 @@ def to_dictionary(input_str: str) -> Dict[str, str]:
     return {s.split(':')[0]: s.split(':')[1] for s in re.split(r'\s', input_str)}
 
 
-def is_password_valid(passport_info: Dict[str, str]) -> bool:
+def is_passport_valid(passport_info: Dict[str, str]) -> bool:
     validation = [field.validate(passport_info) for field in FIELDS]
     return functools.reduce(lambda a, b: a and b, validation)
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         count = 0
         for passport_str in passports:
             passport_info = to_dictionary(passport_str)
-            if is_password_valid(passport_info):
+            if is_passport_valid(passport_info):
                 count += 1
 
         print(f'Valid passports: {count}')
