@@ -5,6 +5,7 @@ from typing import List, Dict
 def calculate_joltage_diff_distribution(joltages: List[int]) -> Dict[int, int]:
     dictionary = {
         1: 0,
+        2: 0,
         3: 0
     }
     for index in range(len(joltages) - 1):
