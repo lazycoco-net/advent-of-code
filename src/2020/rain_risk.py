@@ -45,22 +45,10 @@ class Instruction:
     value: int
 
 
-class NavigationSystem:
-    def __init__(self, start_axis: Axis):
-        self.x = 0
-        self.y = 0
-        self.axis = start_axis
-
-    def process_instructions(self, instructions: List[Instruction]) -> NoReturn:
-        for instruction in instructions:
-            if Axis.is_axis(instruction.action):
-                self.move(Axis(instruction.action), instruction.value)
-            elif Direction.is_direction(instruction.action):
-                direction = Direction(instruction.action)
-                if direction == Direction.FORWARD:
-                    self.move(self.axis, instruction.value)
-                else:
-                    self.rotate(Direction(instruction.action), instruction.value)
+@dataclass
+class Point:
+    x: int
+    y: int
 
     def move(self, axis: Axis, value: int) -> NoReturn:
         if axis is Axis.NORTH:
@@ -72,11 +60,63 @@ class NavigationSystem:
         elif axis is Axis.WEST:
             self.x -= value
 
+    def rotate(self, direction: Direction, degrees: int) -> NoReturn:
+        shift = int(degrees / 90)
+        for i in range(shift):
+            if direction == Direction.RIGHT:
+                new_x = self.y
+                new_y = -self.x
+            else:
+                new_x = -self.y
+                new_y = self.x
+            self.x = new_x
+            self.y = new_y
+
+
+class NavigationSystem:
+    def __init__(self, start_axis: Axis):
+        self.ship_position = Point(0, 0)
+        self.axis = start_axis
+
+    def process_instructions(self, instructions: List[Instruction]) -> NoReturn:
+        for instruction in instructions:
+            if Axis.is_axis(instruction.action):
+                self.move(Axis(instruction.action), instruction.value)
+            elif Direction.is_direction(instruction.action):
+                direction = Direction(instruction.action)
+                if direction == Direction.FORWARD:
+                    self.move_forward(instruction.value)
+                else:
+                    self.rotate(Direction(instruction.action), instruction.value)
+
+    def move(self, axis: Axis, value: int) -> NoReturn:
+        self.ship_position.move(axis, value)
+
+    def move_forward(self, value: int) -> NoReturn:
+        self.move(self.axis, value)
+
     def rotate(self, direction: Direction, value: int) -> NoReturn:
         self.axis = self.axis.rotate(direction, value)
 
     def manhattan_distance(self) -> float:
-        return math.fabs(self.x) + math.fabs(self.y)
+        return math.fabs(self.ship_position.x) + math.fabs(self.ship_position.y)
+
+
+class WaypointNavigationSystem(NavigationSystem):
+
+    def __init__(self, start_axis: Axis, waypoint_position: Point):
+        super().__init__(start_axis)
+        self.waypoint_position = waypoint_position
+
+    def move(self, axis: Axis, value: int) -> NoReturn:
+        self.waypoint_position.move(axis, value)
+
+    def move_forward(self, value: int) -> NoReturn:
+        self.ship_position.x += self.waypoint_position.x * value
+        self.ship_position.y += self.waypoint_position.y * value
+
+    def rotate(self, direction: Direction, value: int) -> NoReturn:
+        self.waypoint_position.rotate(direction, value)
 
 
 if __name__ == '__main__':
@@ -87,5 +127,9 @@ if __name__ == '__main__':
         navigation = NavigationSystem(Axis.EAST)
         navigation.process_instructions(instructions)
         manhattan_distance = navigation.manhattan_distance()
-        print(f'Manhattan distance: {manhattan_distance}')
+        print(f'Manhattan distance Part One: {manhattan_distance}')
+        waypoint_navigation = WaypointNavigationSystem(Axis.EAST, Point(10, 1))
+        waypoint_navigation.process_instructions(instructions)
+        manhattan_distance = waypoint_navigation.manhattan_distance()
+        print(f'Manhattan distance Part Two: {manhattan_distance}')
         print(f'Took {time.time() - start_time} seconds')
