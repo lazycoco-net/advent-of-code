@@ -24,15 +24,11 @@ class Axis(Enum):
 
     def rotate(self, direction: Direction, degrees: int) -> 'Axis':
         direction_order = list(Axis)
-        if direction == Direction.LEFT:
+        if direction is Direction.LEFT:
             direction_order.reverse()
-        shift = degrees / 90
-        index = int((direction_order.index(self) + shift) % 4)
+        shift = int(degrees / 90)
+        index = (direction_order.index(self) + shift) % 4
         return direction_order[index]
-
-    @staticmethod
-    def values() -> List['Axis']:
-        return [Axis.NORTH, Axis.EAST, Axis.SOUTH, Axis.WEST]
 
     @staticmethod
     def is_axis(value: str) -> bool:
@@ -63,7 +59,7 @@ class Point:
     def rotate(self, direction: Direction, degrees: int) -> NoReturn:
         shift = int(degrees / 90)
         for i in range(shift):
-            if direction == Direction.RIGHT:
+            if direction is Direction.RIGHT:
                 new_x = self.y
                 new_y = -self.x
             else:
@@ -84,10 +80,10 @@ class NavigationSystem:
                 self.move(Axis(instruction.action), instruction.value)
             elif Direction.is_direction(instruction.action):
                 direction = Direction(instruction.action)
-                if direction == Direction.FORWARD:
+                if direction is Direction.FORWARD:
                     self.move_forward(instruction.value)
                 else:
-                    self.rotate(Direction(instruction.action), instruction.value)
+                    self.rotate(direction, instruction.value)
 
     def move(self, axis: Axis, value: int) -> NoReturn:
         self.ship_position.move(axis, value)
